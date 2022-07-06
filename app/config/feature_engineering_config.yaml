@@ -1,0 +1,5 @@
+pros_rank : True
+operator : True
+conv : True
+transformed : True
+out_path : '../output/'

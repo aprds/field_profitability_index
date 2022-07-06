@@ -1,0 +1,4 @@
+depth_in : True
+temp_in : True
+field_name_in : True
+out_path : "../output/"
