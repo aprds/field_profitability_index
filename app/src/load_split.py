@@ -26,6 +26,8 @@ def split_xy(df, x_col, y_col):
     """
     x_col = ['id']+x_col
     y_col = ['id']+y_col
+
+    
     return df[x_col], df[y_col]
 
 

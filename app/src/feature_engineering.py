@@ -151,4 +151,4 @@ def main_feat(x_preprocessed_list, params):
 if __name__ == "__main__":
     param_feat = read_yaml(FEATURE_ENGINEERING_CONFIG_PATH)
     x_preprocessed_list = load_preprocessed_data(param_feat)
-    x_train_vect, x_valid_vect, x_test_vect = main_feat(x_preprocessed_list, param_feat)
+    x_train_feat, x_valid_feat, x_test_feat = main_feat(x_preprocessed_list, param_feat)
