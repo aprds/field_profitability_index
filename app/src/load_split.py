@@ -80,7 +80,7 @@ def run_split_data(x, y, stratify_col=None, TEST_SIZE=0.2):
 
 
 def main_load(params):
-    df = pd.read_csv(params["file_loc"])
+    df = pd.read_excel(params["file_loc"])
     x_all, y_all = split_xy(df, [params['x_col']], [params['y_col']])
     x_train, y_train,x_valid, y_valid,x_test, y_test = run_split_data(x_all, y_all, 
                                                                       params['stratify'], 

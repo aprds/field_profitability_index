@@ -114,6 +114,21 @@ def transformation(df_in, do=True):
     return tr_feat_df
 
 
+def feature_eng(df_in, params):
+    """
+    Main function for feature engineering
+    """
+    df = df_in.copy()
+
+    df = prospect_ranking(df, params['pros_rank'])
+    df = operatorship(df, params['operator'])
+    df = df.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
+    df = unit_conv(df, params['conv'])
+    df = transformation(df, params['transformed'])
+
+    return df
+
+
 def main_feat(x_preprocessed_list, params):
     """
     Main function for feature engineering

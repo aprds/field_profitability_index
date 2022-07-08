@@ -1,3 +1,2 @@
-use_weight : True
 verbosity : 2
 out_path : "../model/"
