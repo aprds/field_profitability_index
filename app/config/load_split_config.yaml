@@ -1,19 +1,5 @@
-file_loc : '../data/esdc_raw.xlxs'
-x_col : ['inplace',	'depth', 'temp', 'poro', 'perm',	
-            'saturate',	'api_dens',	'visc',	'avg_fluid_rate', 'Gas', 'Oil', 'Oil-Gas',
-            'NON_PERTAMINA', 'PERTAMINA', 
-            'BOTH', 'OFFSHORE', 'ONSHORE', 
-            'Aceh', 'Jambi', 'Jawa Barat', 'Jawa Tengah', 'Jawa Timur',
-            'Kalimantan Selatan', 'Kalimantan Tengah', 'Kalimantan Timur',
-            'Kalimantan Utara', 'Laut Cina Utara', 'Laut Jawa', 'Laut Natuna',
-            'Laut Natuna Utara', 'Laut Seram', 'Laut Timor', 'Maluku',
-            'Papua Barat', 'Riau', 'Selat Makasar', 'Selat Malaka',
-            'Sulawesi Barat', 'Sulawesi Selatan', 'Sulawesi Tengah',
-            'Sulawesi Tengah (offshore)', 'Sumatera Barat', 'Sumatera Selatan',
-            'Sumatera Utara', 'Teluk Berau', 
-            'Jawa', 'Kalimantan', 'Sumatera', 'Timur']
-
+file_loc : '../data/esdc_raw.xlsx'
+x_col : ['fluid','field_name','operator','project_status','project_level','inplace','depth','temp','poro','perm','saturate','api_dens','visc','cap_cost','opr_cost','total_cost','avg_fluid_rate','location','region','NPV','PI']
 y_col : 'prospect_rank'
-stratify : 'prospect_rank'
 out_path : "../output/"
 test_size : 0.2

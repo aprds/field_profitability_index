@@ -67,7 +67,7 @@ def field_name(df_in, do=True):
     """
     df = df_in.copy()  # Avoid modifying the main dataframe
     if do:
-        df['field_name'] = df.apply(lambda row: row['operator'][0] if np.isnan(row['field_name'])
+        df['field_name'] = df.apply(lambda row: 'x_field' if (pd.isna(row['field_name']))
                     else row['field_name'], axis=1)
 
     return df

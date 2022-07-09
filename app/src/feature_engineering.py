@@ -30,22 +30,6 @@ def load_preprocessed_data(params):
     return list_of_preprocessed
 
 
-def prospect_ranking(df_in, do=True):
-    """
-    function to binning the PI into rank (0 & 1)
-
-    Args:
-    - df_in(DataFrame): Input data
-    """
-    df = df_in.copy()
-    if do:
-        df['prospect_rank'] = df.apply(lambda row: 1 if ((row['project_level'] == 'E0. On Production') | (row['project_level'] == 'E1. Production on Hold')
-                        | (row['project_level'] == 'E2. Under Development') | (row['project_level'] == 'E8. Further Development Not Viable')) else 0
-                        if ((row['project_level'] == 'E7. Production Not Viable') | (row['project_level'] == 'X3. Development Not Viable')) else 1, axis=1)
-
-    return df
-
-
 def operatorship(df_in, do=True):
     """
     function to change operator into Pertamina & Non-Pertamina
@@ -120,7 +104,6 @@ def feature_eng(df_in, params):
     """
     df = df_in.copy()
 
-    df = prospect_ranking(df, params['pros_rank'])
     df = operatorship(df, params['operator'])
     df = df.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
     df = unit_conv(df, params['conv'])
@@ -135,13 +118,9 @@ def main_feat(x_preprocessed_list, params):
     """
     x_train_preprocessed, x_valid_preprocessed, x_test_preprocessed = x_preprocessed_list
 
-    df_train_feat = prospect_ranking(x_train_preprocessed, params['pros_rank'])
-    df_valid_feat = prospect_ranking(x_valid_preprocessed, params['pros_rank'])
-    df_test_feat = prospect_ranking(x_test_preprocessed, params['pros_rank'])
-
-    df_train_feat = operatorship(df_train_feat, params['operator'])
-    df_valid_feat = operatorship(df_valid_feat, params['operator'])
-    df_test_feat = operatorship(df_test_feat, params['operator'])
+    df_train_feat = operatorship(x_train_preprocessed, params['operator'])
+    df_valid_feat = operatorship(x_valid_preprocessed, params['operator'])
+    df_test_feat = operatorship(x_test_preprocessed, params['operator'])
 
     df_train_feat = df_train_feat.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
     df_valid_feat = df_valid_feat.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
