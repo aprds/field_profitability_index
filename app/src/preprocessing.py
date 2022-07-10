@@ -1,3 +1,5 @@
+from matplotlib.pyplot import axis
+from sqlalchemy import column
 from tqdm import tqdm
 import joblib
 import numpy as np
@@ -55,8 +57,8 @@ def temperature(df_in, do=True):
     """
     df = df_in.copy()  # Avoid modifying the main dataframe
     if do:
-        df['temp'] = df.apply(lambda row: np.exp(1.3489 + np.log(row['depth'])*0.3742) if ((np.isnan(row['temp'])) 
-                    | (row['temp'] == 0)) else row['temp'], axis=1)
+        df['temp'] = df.apply(lambda row: np.exp(1.3489 + np.log(row['depth'])*0.3742) if ((np.isnan(row['temp']) 
+                    | (row['temp'] == 0))) else row['temp'], axis=1)
 
     return df
 
@@ -85,6 +87,7 @@ def preprocess(df_in, params):
     - df(DataFrame): preprocessed data
     """
     df = df_in.copy()
+    df = df.loc[(~df.region.isna()), :]
     df = depth(df, params['depth_in'])
     df = temperature(df, params['temp_in'])
     df = field_name(df, params['field_name_in'])

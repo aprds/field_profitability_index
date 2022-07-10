@@ -63,7 +63,19 @@ def unit_conv(df_in, do=True):
     return df
 
 
-def transformation(df_in, do=True):
+def master_encoder(df_all_in):
+
+    df_all = df_all_in.copy()
+    df_all_cat = df_all.loc[:, ['fluid', 'operator', 'project_status', 'location', 'region']]
+    df_all_cat = operatorship(df_all_cat)
+
+    cat_encoder = OneHotEncoder()
+    cat_encoder.fit_transform(df_all_cat)
+
+    return cat_encoder 
+
+
+def transformation(master_enc, df_in, do=True):
     """
     function for data transformatio, focus on ordinal data to become one-hot-encoded
 
@@ -72,12 +84,14 @@ def transformation(df_in, do=True):
     """
     df = df_in.copy()
     if do:
+        df = df.drop(columns=['cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
         num_df = df._get_numeric_data()
-        cat_df = num_df.drop(columns=num_df.columns)
+        cat_df = df.drop(columns=num_df.columns)
+        cat_df = cat_df.drop(columns=['field_name', 'project_level'])
+        cat_df = operatorship(cat_df)
 
-        cat_encoder = OneHotEncoder()
-
-        hot_cat_df = cat_encoder.fit_transform(cat_df)
+        hot_cat_df = master_enc.transform(cat_df)
+        hot_cat_df_ = hot_cat_df.toarray()
 
         cat_columns = ['Gas', 'Oil', 'Oil-Gas',
             'NON_PERTAMINA', 'PERTAMINA', 
@@ -92,7 +106,8 @@ def transformation(df_in, do=True):
             'Sumatera Utara', 'Teluk Berau', 
             'Jawa', 'Kalimantan', 'Sumatera', 'Timur']
 
-        tr_df_cat = pd.DataFrame(hot_cat_df, columns=cat_columns)
+        tr_df_cat = pd.DataFrame(hot_cat_df_, columns=cat_columns)
+
         tr_feat_df = pd.concat((num_df, tr_df_cat), axis=1)
 
     return tr_feat_df
@@ -104,8 +119,6 @@ def feature_eng(df_in, params):
     """
     df = df_in.copy()
 
-    df = operatorship(df, params['operator'])
-    df = df.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
     df = unit_conv(df, params['conv'])
     df = transformation(df, params['transformed'])
 
@@ -118,21 +131,16 @@ def main_feat(x_preprocessed_list, params):
     """
     x_train_preprocessed, x_valid_preprocessed, x_test_preprocessed = x_preprocessed_list
 
-    df_train_feat = operatorship(x_train_preprocessed, params['operator'])
-    df_valid_feat = operatorship(x_valid_preprocessed, params['operator'])
-    df_test_feat = operatorship(x_test_preprocessed, params['operator'])
+    df_all_in = pd.concat((x_train_preprocessed, x_valid_preprocessed, x_test_preprocessed), axis=0)
+    master_enc = master_encoder(df_all_in)
 
-    df_train_feat = df_train_feat.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
-    df_valid_feat = df_valid_feat.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
-    df_test_feat = df_test_feat.drop(columns=['field_name', 'project_level', 'cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
+    df_train_feat = unit_conv(x_train_preprocessed, params['conv'])
+    df_valid_feat = unit_conv(x_valid_preprocessed, params['conv'])
+    df_test_feat = unit_conv(x_test_preprocessed, params['conv'])
 
-    df_train_feat = unit_conv(df_train_feat, params['conv'])
-    df_valid_feat = unit_conv(df_valid_feat, params['conv'])
-    df_test_feat = unit_conv(df_test_feat, params['conv'])
-
-    df_train_feat = transformation(df_train_feat, params['transformed'])
-    df_valid_feat = transformation(df_valid_feat, params['transformed'])
-    df_test_feat = transformation(df_test_feat, params['transformed'])
+    df_train_feat = transformation(master_enc, df_train_feat, params['transformed'])
+    df_valid_feat = transformation(master_enc, df_valid_feat, params['transformed'])
+    df_test_feat = transformation(master_enc, df_test_feat, params['transformed'])
 
 
     joblib.dump(df_train_feat, f"{params['out_path']}x_train_feat.pkl")
