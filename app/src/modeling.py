@@ -56,11 +56,11 @@ def objective_CV(x_train, y_train, space):
     
     Return:
         - model_fitted(callable): model with optimum hyperparams
-    """
+    """     
     clf = xgb.XGBClassifier(
-                        n_estimators = int(space['n_estimators']), max_depth = int(space['max_depth']), gamma = space['gamma'],
-                        reg_alpha = int(space['reg_alpha']), reg_lambda = space['reg_lambda'], subsample = (space['subsample']),
-                        eta = (space['eta']), min_child_weight = int(space['min_child_weight']), eval_metric=space['eval_metric'], objective=space['objective'])
+                        n_estimators = np.round(space['n_estimators'], decimals=0), max_depth = np.round(space['max_depth'], decimals=0), gamma = space['gamma'],
+                        reg_alpha = np.round(space['reg_alpha'], decimals=0), reg_lambda = space['reg_lambda'], subsample = (space['subsample']),
+                        eta = (space['eta']), min_child_weight = np.round(space['min_child_weight'], decimals=0), eval_metric=space['eval_metric'], objective=space['objective'])
 
     kf = KFold(n_splits=2, random_state=42, shuffle=True)
 
@@ -91,11 +91,11 @@ def model_fit(best_hyperparams, x_train, y_train):
                             eta=best_hyperparams['eta'], 
                             gamma=best_hyperparams['gamma'], 
                             subsample=best_hyperparams['subsample'], 
-                            max_depth=int(best_hyperparams['max_depth']), 
+                            max_depth=np.round(best_hyperparams['max_depth'], decimals=0), 
                             reg_lambda=best_hyperparams['reg_lambda'], 
                             reg_alpha=best_hyperparams['reg_alpha'],
                             grow_policy='depthwise',
-                            n_estimators=int(best_hyperparams['n_estimators'])
+                            n_estimators=np.round(best_hyperparams['n_estimators'], decimals=0)
     )
 
     fitted_model = clf_XGB.fit(x_train, y_train)
@@ -134,11 +134,6 @@ def validate(fitted_model, x_valid, y_valid):
 
 
 def main(x_train, y_train, x_valid, y_valid, params):
-    
-    x_train = x_train.drop(columns='id')
-    y_train = y_train.drop(columns='id')
-    x_valid = x_valid.drop(columns='id')
-    y_valid = y_valid.drop(columns='id')
     
     y_train = y_train.values.ravel()
     y_valid = y_valid.values.ravel()

@@ -105,7 +105,7 @@ def transformation(master_enc, df_in, do=True):
             'Sumatera Utara', 'Teluk Berau', 
             'Jawa', 'Kalimantan', 'Sumatera', 'Timur']
 
-        tr_df_cat = pd.DataFrame(hot_cat_df_, columns=cat_columns)
+        tr_df_cat = pd.DataFrame(hot_cat_df_, columns=cat_columns, index=num_df.index)
 
         tr_feat_df = pd.concat((num_df, tr_df_cat), axis=1)
 
@@ -116,10 +116,11 @@ def feature_eng(df_in, params):
     """
     Main function for feature engineering
     """
-    df = df_in.copy()
+    master_enc = joblib.load(f"{params['out_path']}master_encoder.pkl")
 
+    df = df_in.copy()
     df = unit_conv(df, params['conv'])
-    df = transformation(df, params['transformed'])
+    df = transformation(master_enc, df, params['transformed'])
 
     return df
 
@@ -145,6 +146,8 @@ def main_feat(x_preprocessed_list, params):
     joblib.dump(df_train_feat, f"{params['out_path']}x_train_feat.pkl")
     joblib.dump(df_valid_feat, f"{params['out_path']}x_valid_feat.pkl")
     joblib.dump(df_test_feat, f"{params['out_path']}x_test_feat.pkl")
+
+    joblib.dump(master_enc, f"{params['out_path']}master_encoder.pkl")
     
     return df_train_feat, df_valid_feat, df_test_feat
 
