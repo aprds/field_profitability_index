@@ -58,14 +58,14 @@ def objective_CV(x_train, y_train, space):
         - model_fitted(callable): model with optimum hyperparams
     """     
     clf = xgb.XGBClassifier(
-                        n_estimators = np.round(space['n_estimators'], decimals=0), max_depth = np.round(space['max_depth'], decimals=0), gamma = space['gamma'],
-                        reg_alpha = np.round(space['reg_alpha'], decimals=0), reg_lambda = space['reg_lambda'], subsample = (space['subsample']),
-                        eta = (space['eta']), min_child_weight = np.round(space['min_child_weight'], decimals=0), eval_metric=space['eval_metric'], objective=space['objective'])
+                        n_estimators = space['n_estimators'], max_depth = space['max_depth'], gamma = space['gamma'],
+                        reg_alpha = space['reg_alpha'], reg_lambda = space['reg_lambda'], subsample = (space['subsample']),
+                        eta = (space['eta']), min_child_weight = space['min_child_weight'], eval_metric=space['eval_metric'], objective=space['objective'])
 
     kf = KFold(n_splits=2, random_state=42, shuffle=True)
 
     score = cross_val_score(clf, x_train, y_train, cv=kf, scoring="roc_auc", n_jobs=-1).mean()
-
+    
     print(f'roc_auc_score:', score)
 
     return {'loss': -score, 'status': STATUS_OK}

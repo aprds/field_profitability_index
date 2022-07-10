@@ -1,3 +1,4 @@
+from operator import index
 from tqdm import tqdm
 import joblib
 import numpy as np
@@ -21,13 +22,19 @@ def load_preprocessed_data(params):
     - list_of_preprocessed(List): list of preprocessed data.
     """
     name = ['train','valid','test']
-    list_of_preprocessed = []
+    list_of_preprocessed_feat = []
+    list_of_preprocessed_target = []
     for i in name:
         path = f"{params['out_path']}x_{i}_preprocessed.pkl"
         temp = joblib.load(path)
-        list_of_preprocessed.append(temp)
+        list_of_preprocessed_feat.append(temp)
 
-    return list_of_preprocessed
+    for i in name:
+        path = f"{params['out_path']}y_{i}.pkl"
+        temp = joblib.load(path)
+        list_of_preprocessed_target.append(temp)
+
+    return list_of_preprocessed_feat, list_of_preprocessed_target
 
 
 def operatorship(df_in, do=True):
@@ -75,7 +82,7 @@ def master_encoder(df_all_in):
     return cat_encoder 
 
 
-def transformation(master_enc, df_in, do=True):
+def transformation(master_enc, df_in, y_in, do=True):
     """
     function for data transformatio, focus on ordinal data to become one-hot-encoded
 
@@ -108,8 +115,9 @@ def transformation(master_enc, df_in, do=True):
         tr_df_cat = pd.DataFrame(hot_cat_df_, columns=cat_columns, index=num_df.index)
 
         tr_feat_df = pd.concat((num_df, tr_df_cat), axis=1)
+        tr_target_df = pd.DataFrame(y_in).loc[num_df.index, :]
 
-    return tr_feat_df
+    return tr_feat_df, tr_target_df
 
 
 def feature_eng(df_in, params):
@@ -125,11 +133,12 @@ def feature_eng(df_in, params):
     return df
 
 
-def main_feat(x_preprocessed_list, params):
+def main_feat(x_preprocessed_list, y_preprocessed_list, params):
     """
     Main function for feature engineering
     """
     x_train_preprocessed, x_valid_preprocessed, x_test_preprocessed = x_preprocessed_list
+    y_train_ps, y_valid_ps, y_test_ps = y_preprocessed_list
 
     df_all_in = pd.concat((x_train_preprocessed, x_valid_preprocessed, x_test_preprocessed), axis=0)
     master_enc = master_encoder(df_all_in)
@@ -138,9 +147,9 @@ def main_feat(x_preprocessed_list, params):
     df_valid_feat = unit_conv(x_valid_preprocessed, params['conv'])
     df_test_feat = unit_conv(x_test_preprocessed, params['conv'])
 
-    df_train_feat = transformation(master_enc, df_train_feat, params['transformed'])
-    df_valid_feat = transformation(master_enc, df_valid_feat, params['transformed'])
-    df_test_feat = transformation(master_enc, df_test_feat, params['transformed'])
+    df_train_feat, y_train = transformation(master_enc, df_train_feat, y_train_ps, params['transformed'])
+    df_valid_feat, y_valid = transformation(master_enc, df_valid_feat, y_valid_ps, params['transformed'])
+    df_test_feat, y_test = transformation(master_enc, df_test_feat, y_test_ps, params['transformed'])
 
 
     joblib.dump(df_train_feat, f"{params['out_path']}x_train_feat.pkl")
@@ -148,11 +157,15 @@ def main_feat(x_preprocessed_list, params):
     joblib.dump(df_test_feat, f"{params['out_path']}x_test_feat.pkl")
 
     joblib.dump(master_enc, f"{params['out_path']}master_encoder.pkl")
+
+    joblib.dump(y_train, f"{params['out_path']}y_train.pkl")
+    joblib.dump(y_valid, f"{params['out_path']}y_valid.pkl")
+    joblib.dump(y_test, f"{params['out_path']}y_test.pkl")
     
     return df_train_feat, df_valid_feat, df_test_feat
 
 
 if __name__ == "__main__":
     param_feat = read_yaml(FEATURE_ENGINEERING_CONFIG_PATH)
-    x_preprocessed_list = load_preprocessed_data(param_feat)
-    x_train_feat, x_valid_feat, x_test_feat = main_feat(x_preprocessed_list, param_feat)
+    x_preprocessed_list, y_preprocessed_list = load_preprocessed_data(param_feat)
+    x_train_feat, x_valid_feat, x_test_feat = main_feat(x_preprocessed_list, y_preprocessed_list, param_feat)
