@@ -86,8 +86,7 @@ def transformation(master_enc, df_in, do=True):
     if do:
         df = df.drop(columns=['cap_cost', 'opr_cost','total_cost', 'NPV', 'PI'])
         num_df = df._get_numeric_data()
-        cat_df = df.drop(columns=num_df.columns)
-        cat_df = cat_df.drop(columns=['field_name', 'project_level'])
+        cat_df = df.loc[:, ['fluid', 'operator', 'project_status', 'location', 'region']]
         cat_df = operatorship(cat_df)
 
         hot_cat_df = master_enc.transform(cat_df)
