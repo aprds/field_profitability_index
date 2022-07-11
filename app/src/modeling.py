@@ -46,7 +46,7 @@ def load_fed_data():
     return x_train, y_train, x_valid, y_valid
 
 
-def objective_CV(x_train, y_train, space):
+def objective_CV(x_train, y_train, x_valid, y_valid, space):
     """
     Optimized model objective function
     
@@ -62,9 +62,15 @@ def objective_CV(x_train, y_train, space):
                         reg_alpha = space['reg_alpha'], reg_lambda = space['reg_lambda'], subsample = (space['subsample']),
                         eta = (space['eta']), min_child_weight = space['min_child_weight'], eval_metric=space['eval_metric'], objective=space['objective'])
 
-    kf = KFold(n_splits=2, random_state=42, shuffle=True)
 
-    score = cross_val_score(clf, x_train, y_train, cv=kf, scoring="roc_auc", n_jobs=-1).mean()
+    clf_train = clf.fit(x_train, y_train)
+    clf_valid = clf.fit(x_valid, y_valid)
+
+    y_valid_pred = clf_train.predict_proba(x_valid)[:,1]
+    y_train_pred = clf_valid.predict_proba(x_train)[:,1]
+
+    score = np.mean(roc_auc_score(y_valid, y_valid_pred), roc_auc_score(y_train, y_train_pred))
+
     
     print(f'roc_auc_score:', score)
 
@@ -91,11 +97,11 @@ def model_fit(best_hyperparams, x_train, y_train):
                             eta=best_hyperparams['eta'], 
                             gamma=best_hyperparams['gamma'], 
                             subsample=best_hyperparams['subsample'], 
-                            max_depth=np.round(best_hyperparams['max_depth'], decimals=0), 
+                            max_depth=best_hyperparams['max_depth'], 
                             reg_lambda=best_hyperparams['reg_lambda'], 
                             reg_alpha=best_hyperparams['reg_alpha'],
                             grow_policy='depthwise',
-                            n_estimators=np.round(best_hyperparams['n_estimators'], decimals=0)
+                            n_estimators=best_hyperparams['n_estimators'],
     )
 
     fitted_model = clf_XGB.fit(x_train, y_train)
@@ -111,7 +117,7 @@ def classif_report(fitted_model, x_test, y_test):
     print('Test Data: balanced_accuracy_score: %s' % balanced_accuracy_score(y_test, y_pred))
     print('Test Data: precision_score: %s' % precision_score(y_test, y_pred))
     print('Test Data: recall_score: %s' % recall_score(y_test, y_pred))
-    print('Test Data: roc_auc_score:', 2*(roc_auc_score(y_test, fitted_model.predict_proba(x_test)[:,1]))-1)
+    print('Test Data: roc_auc_score:', roc_auc_score(y_test, fitted_model.predict_proba(x_test)[:,1]))
 
     return y_pred
 
@@ -153,8 +159,8 @@ def main(x_train, y_train, x_valid, y_valid, params):
          'eval_metric' : 'auc',
          'objective' : 'binary:logistic'}
 
-    fn = objective_CV(x_train, y_train, space)
-    best_hyperparams = hyperoptimize(fn, space)
+    objective_CV(x_train, y_train, x_valid, y_valid, space)
+    best_hyperparams = hyperoptimize(objective_CV, space)
     fitted_model = model_fit(best_hyperparams, x_train, y_train)
     elapsed_time = time.time() - t0
     print(f'elapsed time: {elapsed_time} s \n')
