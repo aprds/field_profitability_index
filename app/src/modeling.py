@@ -17,6 +17,9 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import classification_report, roc_auc_score, f1_score, make_scorer, precision_score, accuracy_score, recall_score, balanced_accuracy_score
 from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from sklearn.model_selection import KFold, cross_val_score
+from hyperopt.pyll.base import scope
+from hyperopt.pyll.stochastic import sample
+
 
 tqdm.pandas()
 
@@ -180,17 +183,16 @@ if __name__ == "__main__":
     param_model = read_yaml(MODELING_CONFIG_PATH)
     x_train, y_train, x_valid, y_valid = load_fed_data()
 
-    space = {'max_depth' : hp.choice('max_depth', np.arange(2, 20, 1, dtype=int)),
-         'eta' : hp.choice('eta', np.arange(0.01, 0.5, 0.05, dtype=float)), #float
-         'gamma' : hp.choice('gamma', np.arange(0, 2, 0.1, dtype=float)), #float
-         'reg_alpha' : hp.choice('reg_alpha', np.arange(0, 50, 1, dtype=int)),
-         'reg_lambda' : hp.choice('reg_lambda', np.arange(0, 50, 0.05, dtype=float)), #float
-         'subsample' : hp.choice('subsample', np.arange(0, 1, 0.1, dtype=float)), #float
-         'min_child_weight' : hp.choice('min_child_weight', np.arange(0, 10, 1, dtype=int)),
-         'n_estimators' : hp.choice('n_estimators', np.arange(0, 1000, 50, dtype=int)),
+    space = {'max_depth' : sample(scope.int(hp.quniform('max_depth', 2, 20, 1))),
+         'eta' : sample(scope.int(hp.uniform('eta', 0.01, 0.5))), ##
+         'gamma' : sample(scope.int(hp.uniform('gamma', 0, 2))), ##
+         'reg_alpha' : sample(scope.int(hp.quniform('reg_alpha', 0, 50, 1))),
+         'reg_lambda' : sample(scope.int(hp.uniform('reg_lambda', 0, 50))), ##
+         'subsample' : sample(scope.int(hp.uniform('subsample', 0.5, 1))), ##
+         'min_child_weight' : sample(scope.int(hp.quniform('min_child_weight', 0, 10, 1))),
+         'n_estimators' : sample(scope.int(hp.quniform('n_estimators', 5, 1000, 100))),
          'seed' : 0,
          'eval_metric' : 'auc',
          'objective' : 'binary:logistic'}
-
 
     fitted_model = main(x_train, y_train, x_valid, y_valid, param_model, space)
