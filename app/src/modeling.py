@@ -57,11 +57,11 @@ def hyperoptimize(x_train, y_train, x_valid, y_valid):
 
     def objective_CV(space):
 
-        clf = xgb.XGBClassifier(
-                        n_estimators = int(space['n_estimators']), max_depth = int(space['max_depth']), gamma = space['gamma'],
+        clf = xgb.XGBClassifier(n_estimators = int(space['n_estimators']), max_depth = int(space['max_depth']), gamma = space['gamma'],
                         reg_alpha = int(space['reg_alpha']), reg_lambda = space['reg_lambda'], subsample = space['subsample'],
                         eta = space['eta'], min_child_weight = int(space['min_child_weight']), seed = 0, 
-                        eval_metric = 'auc', objective = 'binary:logistic')
+                        eval_metric = 'auc', objective = 'binary:logistic'
+                        )
 
         clf_train = clf.fit(x_train, y_train)
         clf_valid = clf.fit(x_valid, y_valid)
@@ -69,21 +69,21 @@ def hyperoptimize(x_train, y_train, x_valid, y_valid):
         y_valid_pred = clf_train.predict_proba(x_valid)[:,1]
         y_train_pred = clf_valid.predict_proba(x_train)[:,1]
 
-        score = np.mean(roc_auc_score(y_valid, y_valid_pred), roc_auc_score(y_train, y_train_pred))
+        score = np.mean([roc_auc_score(y_valid, y_valid_pred), roc_auc_score(y_train, y_train_pred)])
 
         print(f'roc_auc_score:', score)
 
         return {'loss': -score, 'status': STATUS_OK}
 
     best_hyperparams = fmin(objective_CV,
-                        space = {'max_depth' : sample(scope.int(hp.quniform('max_depth', 2, 20, 1))),
-                                'eta' : sample(scope.float(hp.uniform('eta', 0.01, 0.5))), ##
-                                'gamma' : sample(scope.float(hp.uniform('gamma', 0, 2))), ##
-                                'reg_alpha' : sample(scope.int(hp.quniform('reg_alpha', 0, 50, 1))),
-                                'reg_lambda' : sample(scope.float(hp.uniform('reg_lambda', 0, 50))), ##
-                                'subsample' : sample(scope.float(hp.uniform('subsample', 0.5, 1))), ##
-                                'min_child_weight' : sample(scope.int(hp.quniform('min_child_weight', 0, 10, 1))),
-                                'n_estimators' : sample(scope.int(hp.quniform('n_estimators', 5, 1000, 100)))},
+                        space = {'n_estimators' : hp.quniform('n_estimators', 5, 1000, 100),
+                                'max_depth' : hp.quniform('max_depth', 2, 20, 1),
+                                'gamma' : hp.uniform('gamma', 0, 2),
+                                'reg_alpha' : hp.quniform('reg_alpha', 0, 50, 1),
+                                'reg_lambda' : hp.uniform('reg_lambda', 0, 50),
+                                'subsample' : hp.uniform('subsample', 0.5, 1),
+                                'eta' : hp.uniform('eta', 0.01, 0.5),
+                                'min_child_weight' : hp.quniform('min_child_weight', 0, 10, 1)},
                         algo = tpe.suggest,
                         max_evals = 100,
                         trials = trials)
