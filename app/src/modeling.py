@@ -147,7 +147,6 @@ def main(x_train, y_train, x_valid, y_valid, params):
     
     # Train
     t0 = time.time()
-    #objective_CV(x_train, y_train, x_valid, y_valid, space)
     best_hyperparams = hyperoptimize(x_train, y_train, x_valid, y_valid)
     fitted_model = model_fit(best_hyperparams, x_train, y_train)
     elapsed_time = time.time() - t0
