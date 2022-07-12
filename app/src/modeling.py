@@ -112,10 +112,13 @@ def model_fit(best_hyperparams, x_train, y_train):
                             subsample=best_hyperparams['subsample'], 
                             max_depth=int(best_hyperparams['max_depth']), 
                             reg_lambda=best_hyperparams['reg_lambda'], 
-                            reg_alpha=best_hyperparams['reg_alpha'],
+                            reg_alpha=int(best_hyperparams['reg_alpha']),
                             grow_policy='depthwise',
-                            n_estimators=int(best_hyperparams['n_estimators'])
-    )
+                            n_estimators=int(best_hyperparams['n_estimators']),
+                            min_child_weight =int(best_hyperparams['min_child_weight']),
+                            seed=0,
+                            eval_metric='auc',
+                            objective='binary:logistic')
 
     fitted_model = clf_XGB.fit(x_train, y_train)
 
@@ -177,14 +180,14 @@ if __name__ == "__main__":
     param_model = read_yaml(MODELING_CONFIG_PATH)
     x_train, y_train, x_valid, y_valid = load_fed_data()
 
-    space = {'max_depth' : hp.quniform('max_depth', 2, 20, 1),
-         'eta' : hp.uniform('eta', 0.01, 0.5, 0.05),
-         'gamma' : hp.uniform('gamma', 0, 2),
-         'reg_alpha' : hp.quniform('reg_alpha', 0, 50, 1),
-         'reg_lambda' : hp.uniform('reg_lambda', 0, 50),
-         'subsample' : hp.uniform('subsample', 0.5, 1),
-         'min_child_weight' : hp.quniform('min_child_weight', 0, 10, 1),
-         'n_estimators' : hp.quniform('n_estimators', 5, 1000),
+    space = {'max_depth' : hp.choice('max_depth', np.arange(2, 20, 1, dtype=int)),
+         'eta' : hp.choice('eta', np.arange(0.01, 0.5, 0.05, dtype=float)), #float
+         'gamma' : hp.choice('gamma', np.arange(0, 2, 0.1, dtype=float)), #float
+         'reg_alpha' : hp.choice('reg_alpha', np.arange(0, 50, 1, dtype=int)),
+         'reg_lambda' : hp.choice('reg_lambda', np.arange(0, 50, 0.05, dtype=float)), #float
+         'subsample' : hp.choice('subsample', np.arange(0, 1, 0.1, dtype=float)), #float
+         'min_child_weight' : hp.choice('min_child_weight', np.arange(0, 10, 1, dtype=int)),
+         'n_estimators' : hp.choice('n_estimators', np.arange(0, 1000, 50, dtype=int)),
          'seed' : 0,
          'eval_metric' : 'auc',
          'objective' : 'binary:logistic'}
