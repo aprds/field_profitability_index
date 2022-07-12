@@ -1,13 +1,2 @@
 verbosity : 2
 out_path : "../model/"
-n_estimators : ['n_estimators', 5, 1000]
-max_depth : ['max_depth', 2, 20, 1]
-gamma : ['gamma', 0, 2]
-reg_alpha : ['reg_alpha', 0, 50, 1]
-reg_lambda : ['reg_lambda', 0, 50]
-subsample : ['subsample', 0.5, 1]
-eta : ['eta', 0.01, 0.5, 0.05]
-min_child_weight : ['min_child_weight', 0, 10, 1]
-seed : 0
-eval_metric : 'auc'
-objective : 'binary:logistic'
