@@ -17,8 +17,6 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import classification_report, roc_auc_score, f1_score, make_scorer, precision_score, accuracy_score, recall_score, balanced_accuracy_score
 from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from sklearn.model_selection import KFold, cross_val_score
-from hyperopt.pyll.base import scope
-from hyperopt.pyll.stochastic import sample
 
 
 tqdm.pandas()

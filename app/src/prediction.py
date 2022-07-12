@@ -29,7 +29,7 @@ param_preprocess = read_yaml(PREPROCESSING_CONFIG_PATH)
 if __name__ == "__main__":
     while(1):
         print("Membaca Data Set Prediksi:")
-        df = pd.read_csv('data/prediction.csv')
+        df = pd.read_csv('../data/prediction.csv')
         predict, proba = main_predict(df, model, param_preprocess, param_feat_eng)
         print("Hasil prediksi\t:", predict)
         print("Probabilitas\t:", proba[0], "\n\n")
