@@ -1,6 +1,8 @@
+from ast import Raise
 from unittest import result
 import numpy as np
 import pandas as pd
+from sklearn.decomposition import SparsePCA
 from sympy import hyper
 from tqdm import tqdm
 import joblib
@@ -59,9 +61,9 @@ def objective_CV(x_train, y_train, x_valid, y_valid, space):
     """     
     clf = xgb.XGBClassifier(
                         n_estimators = space['n_estimators'], max_depth = space['max_depth'], gamma = space['gamma'],
-                        reg_alpha = space['reg_alpha'], reg_lambda = space['reg_lambda'], subsample = (space['subsample']),
-                        eta = (space['eta']), min_child_weight = space['min_child_weight'], eval_metric=space['eval_metric'], objective=space['objective'])
-
+                        reg_alpha = space['reg_alpha'], reg_lambda = space['reg_lambda'], subsample = space['subsample'],
+                        eta = space['eta'], min_child_weight = space['min_child_weight'], seed = space['seed'], 
+                        eval_metric = space['eval_metric'], objective = space['objective'])
 
     clf_train = clf.fit(x_train, y_train)
     clf_valid = clf.fit(x_valid, y_valid)
@@ -71,7 +73,6 @@ def objective_CV(x_train, y_train, x_valid, y_valid, space):
 
     score = np.mean(roc_auc_score(y_valid, y_valid_pred), roc_auc_score(y_train, y_train_pred))
 
-    
     print(f'roc_auc_score:', score)
 
     return {'loss': -score, 'status': STATUS_OK}
@@ -80,6 +81,18 @@ def objective_CV(x_train, y_train, x_valid, y_valid, space):
 def hyperoptimize(fn, space):
 
     trials = Trials()
+
+    space = {'max_depth' : space['max_depth'],
+         'eta' : space['eta'],
+         'gamma' : space['gamma'],
+         'reg_alpha' : space['reg_alpha'],
+         'reg_lambda' : space['reg_lambda'],
+         'subsample' : space['subsample'],
+         'min_child_weight' : space['min_child_weight'],
+         'n_estimators' : space['n_estimators'],
+         'seed' : space['seed'],
+         'eval_metric' : space['eval_metric'],
+         'objective' : space['objective']}
 
     best_hyperparams = fmin(fn,
                         space = space,
@@ -97,11 +110,11 @@ def model_fit(best_hyperparams, x_train, y_train):
                             eta=best_hyperparams['eta'], 
                             gamma=best_hyperparams['gamma'], 
                             subsample=best_hyperparams['subsample'], 
-                            max_depth=best_hyperparams['max_depth'], 
+                            max_depth=int(best_hyperparams['max_depth']), 
                             reg_lambda=best_hyperparams['reg_lambda'], 
                             reg_alpha=best_hyperparams['reg_alpha'],
                             grow_policy='depthwise',
-                            n_estimators=best_hyperparams['n_estimators'],
+                            n_estimators=int(best_hyperparams['n_estimators'])
     )
 
     fitted_model = clf_XGB.fit(x_train, y_train)
@@ -139,30 +152,15 @@ def validate(fitted_model, x_valid, y_valid):
     return classif_report(fitted_model, x_valid, y_valid)
 
 
-def main(x_train, y_train, x_valid, y_valid, params):
+def main(x_train, y_train, x_valid, y_valid, params, space):
     
-    y_train = y_train.values.ravel()
-    y_valid = y_valid.values.ravel()
-
-
     # Train
     t0 = time.time()
-    space = {'max_depth' : hp.quniform('max_depth', 2, 20, 1),
-         'eta' : hp.quniform('eta', 0.01, 0.5, 0.05),
-         'gamma' : hp.uniform('gamma', 0, 2),
-         'reg_alpha' : hp.quniform('reg_alpha', 0, 50, 1),
-         'reg_lambda' : hp.uniform('reg_lambda', 0, 50),
-         'subsample' : hp.uniform('subsample', 0.5, 1),
-         'min_child_weight' : hp.quniform('min_child_weight', 0, 10, 1),
-         'n_estimators' : hp.uniform('n_estimators', 5, 1000),
-         'seed' : 0,
-         'eval_metric' : 'auc',
-         'objective' : 'binary:logistic'}
-
     objective_CV(x_train, y_train, x_valid, y_valid, space)
     best_hyperparams = hyperoptimize(objective_CV, space)
     fitted_model = model_fit(best_hyperparams, x_train, y_train)
     elapsed_time = time.time() - t0
+
     print(f'elapsed time: {elapsed_time} s \n')
 
 
@@ -178,4 +176,18 @@ def main(x_train, y_train, x_valid, y_valid, params):
 if __name__ == "__main__":
     param_model = read_yaml(MODELING_CONFIG_PATH)
     x_train, y_train, x_valid, y_valid = load_fed_data()
-    fitted_model = main(x_train, y_train, x_valid, y_valid, param_model)
+
+    space = {'max_depth' : hp.quniform('max_depth', 2, 20, 1),
+         'eta' : hp.uniform('eta', 0.01, 0.5, 0.05),
+         'gamma' : hp.uniform('gamma', 0, 2),
+         'reg_alpha' : hp.quniform('reg_alpha', 0, 50, 1),
+         'reg_lambda' : hp.uniform('reg_lambda', 0, 50),
+         'subsample' : hp.uniform('subsample', 0.5, 1),
+         'min_child_weight' : hp.quniform('min_child_weight', 0, 10, 1),
+         'n_estimators' : hp.quniform('n_estimators', 5, 1000),
+         'seed' : 0,
+         'eval_metric' : 'auc',
+         'objective' : 'binary:logistic'}
+
+
+    fitted_model = main(x_train, y_train, x_valid, y_valid, param_model, space)
