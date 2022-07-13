@@ -36,16 +36,19 @@ def res_constructor(predict, proba):
 
 @app.post("/predict/")
 
-def predict_api(fluid = Form(), operator=Form(), project_status=Form(), inplace=Form(), depth=Form(), temp= Form(), poro=Form(), perm=Form(), saturate=Form(), api_dens=Form(), visc=Form(), avg_fluid_rate=Form(), location=Form(), region=Form()):
+def predict_api(fluid: str =Form(), field_name: str =Form(), operator: str =Form(), project_status: str =Form(), 
+                inplace: float =Form(), depth: float =Form(), temp: float =Form(), poro: float =Form(), 
+                perm:float =Form(), saturate: float =Form(), api_dens: float =Form(), visc: float =Form(), 
+                avg_fluid_rate: float =Form(), location: str =Form(), region: str =Form()):
     
     try:
 
-        forming = {'fluid': fluid, 'operator': operator, 'project_status': project_status,
+        forming = {'fluid': fluid, 'field_name': field_name, 'operator': operator, 'project_status': project_status,
                     'inplace': inplace, 'depth': depth, 'temp': temp, 'poro': poro,
                     'perm': perm, 'saturate': saturate, 'api_dens': api_dens, 'visc': visc,
                     'avg_fluid_rate': avg_fluid_rate, 'location': location, 'region': region}
 
-        df = pd.DataFrame(forming, index=[0])
+        df = pd.DataFrame([forming])
 
         predict, proba = main_predict(df, model, param_preprocess, param_feat_eng)
         res = res_constructor(predict, proba)
