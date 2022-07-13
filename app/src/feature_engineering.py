@@ -117,7 +117,36 @@ def transformation(master_enc, df_in, y_in, do=True):
         tr_feat_df = pd.concat((num_df, tr_df_cat), axis=1)
         tr_target_df = pd.DataFrame(y_in).loc[num_df.index, :]
 
-    return tr_feat_df, tr_target_df
+        return tr_feat_df, tr_target_df
+
+
+    else:
+        num_df = df._get_numeric_data()
+        cat_df = df.loc[:, ['fluid', 'operator', 'project_status', 'location', 'region']]
+        cat_df = operatorship(cat_df)
+
+        hot_cat_df = master_enc.transform(cat_df)
+        hot_cat_df_ = hot_cat_df.toarray()
+
+        cat_columns = ['Gas', 'Oil', 'Oil-Gas',
+            'NON_PERTAMINA', 'PERTAMINA', 
+            'BOTH', 'OFFSHORE', 'ONSHORE', 
+            'Aceh', 'Jambi', 'Jawa Barat', 'Jawa Tengah', 'Jawa Timur',
+            'Kalimantan Selatan', 'Kalimantan Tengah', 'Kalimantan Timur',
+            'Kalimantan Utara', 'Laut Cina Utara', 'Laut Jawa', 'Laut Natuna',
+            'Laut Natuna Utara', 'Laut Seram', 'Laut Timor', 'Maluku',
+            'Papua Barat', 'Riau', 'Selat Makasar', 'Selat Malaka',
+            'Sulawesi Barat', 'Sulawesi Selatan', 'Sulawesi Tengah',
+            'Sulawesi Tengah (offshore)', 'Sumatera Barat', 'Sumatera Selatan',
+            'Sumatera Utara', 'Teluk Berau', 
+            'Jawa', 'Kalimantan', 'Sumatera', 'Timur']
+
+        tr_df_cat = pd.DataFrame(hot_cat_df_, columns=cat_columns, index=num_df.index)
+
+        tr_feat_df = pd.concat((num_df, tr_df_cat), axis=1)
+
+
+    return tr_feat_df
 
 
 def feature_eng(df_in, params):
@@ -128,7 +157,7 @@ def feature_eng(df_in, params):
 
     df = df_in.copy()
     df = unit_conv(df, params['conv'])
-    df = transformation(master_enc, df, params['transformed'])
+    df = transformation(master_enc, df, y_in=1, do=False)
 
     return df
 

@@ -1,0 +1,2 @@
+fluid,field_name,operator,project_status,inplace,depth,temp,poro,perm,saturate,api_dens,visc,avg_fluid_rate,location,region
+Gas,ALAS TUA WEST,EXXONMOBIL CEPU LTD.,ONSHORE,280,5627,,0.2315401,396.2948,0.5446487,0.6547354,0,61.13619,Jawa Timur,Jawa
