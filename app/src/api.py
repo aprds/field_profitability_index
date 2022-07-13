@@ -49,3 +49,4 @@ def predict_api(fluid = Form(), operator=Form(), project_status=Form(), inplace=
     except Exception as e:
         return {'result': "", 'proba': "", 'message': str(e)}
     
+    
