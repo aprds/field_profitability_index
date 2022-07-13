@@ -38,10 +38,15 @@ def res_constructor(predict, proba):
 
 def predict_api(fluid = Form(), operator=Form(), project_status=Form(), inplace=Form(), depth=Form(), temp= Form(), poro=Form(), perm=Form(), saturate=Form(), api_dens=Form(), visc=Form(), avg_fluid_rate=Form(), location=Form(), region=Form()):
     
-    df = pd.DataFrame((fluid,operator,project_status,inplace,depth,temp,poro,perm,saturate,api_dens,visc,avg_fluid_rate,location,region), 
-                        columns=[fluid,operator,project_status,inplace,depth,temp,poro,perm,saturate,api_dens,visc,avg_fluid_rate,location,region] 
-                        )
     try:
+
+        forming = {'fluid': fluid, 'operator': operator, 'project_status': project_status,
+                    'inplace': inplace, 'depth': depth, 'temp': temp, 'poro': poro,
+                    'perm': perm, 'saturate': saturate, 'api_dens': api_dens, 'visc': visc,
+                    'avg_fluid_rate': avg_fluid_rate, 'location': location, 'region': region}
+
+        df = pd.DataFrame(forming, index=[0])
+
         predict, proba = main_predict(df, model, param_preprocess, param_feat_eng)
         res = res_constructor(predict, proba)
         return res
