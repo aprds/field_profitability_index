@@ -36,17 +36,25 @@ def res_constructor(predict, proba):
 
 @app.post("/predict/")
 
-def predict_api(fluid: str =Form(), field_name: str =Form(), operator: str =Form(), project_status: str =Form(), 
+def add_component(fluid: str =Form(), field_name: str =Form(), operator: str =Form(), project_status: str =Form(), 
                 inplace: float =Form(), depth: float =Form(), temp: float =Form(), poro: float =Form(), 
                 perm:float =Form(), saturate: float =Form(), api_dens: float =Form(), visc: float =Form(), 
                 avg_fluid_rate: float =Form(), location: str =Form(), region: str =Form()):
     
     try:
+        forming = {}
+        col = ['fluid','field_name','operator','project_status',
+                'inplace','depth','temp','poro',
+                'perm','saturate','api_dens','visc',
+                'avg_fluid_rate','location','region']
 
-        forming = {'fluid': fluid, 'field_name': field_name, 'operator': operator, 'project_status': project_status,
-                    'inplace': inplace, 'depth': depth, 'temp': temp, 'poro': poro,
-                    'perm': perm, 'saturate': saturate, 'api_dens': api_dens, 'visc': visc,
-                    'avg_fluid_rate': avg_fluid_rate, 'location': location, 'region': region}
+        val = [fluid,field_name,operator,project_status,
+                inplace,depth,temp,poro,
+                perm,saturate,api_dens,visc,
+                avg_fluid_rate,location,region]
+
+        for i in zip(col, val):
+            forming[i[0]] = i[1]
 
         df = pd.DataFrame([forming])
 

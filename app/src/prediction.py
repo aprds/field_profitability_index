@@ -17,7 +17,7 @@ def main_predict(df, model, param_preprocess, param_feat_eng):
     df_feature_eng = feature_eng(df_preprocessed, param_feat_eng)
 
     proba = model.predict_proba(df_feature_eng)[:, 1]
-    predict = 1 if proba > 0.5 else 0
+    predict = '1| Profitable' if proba > 0.5 else '0| Marginal'
 
     return predict, proba
 
