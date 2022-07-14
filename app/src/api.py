@@ -8,6 +8,7 @@ from prediction import main_predict
 from fastapi import FastAPI, Form, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from tqdm import tqdm
+from pydantic import BaseModel
 
 tqdm.pandas()
 
@@ -34,15 +35,44 @@ def res_constructor(predict, proba):
     res = {'result': predict, 'proba': proba}
     return res
 
-@app.post("/predict/")
+class Fld_indx(BaseModel):
+    fluid: str
+    field_name: str 
+    operator: str
+    project_status: str
+    inplace: float
+    depth: float
+    temp: float
+    poro: float
+    perm: float
+    saturate: float
+    api_dens: float
+    visc: float
+    avg_fluid_rate: float
+    location: str
+    region: str
 
-def add_component(fluid: str =Form(), field_name: str =Form(), operator: str =Form(), project_status: str =Form(), 
-                inplace: float =Form(), depth: float =Form(), temp: float =Form(), poro: float =Form(), 
-                perm:float =Form(), saturate: float =Form(), api_dens: float =Form(), visc: float =Form(), 
-                avg_fluid_rate: float =Form(), location: str =Form(), region: str =Form()):
+
+@app.get("/predict/")
+async def get_prediction(feat: Fld_indx):
+    fluid= feat.fluid
+    field_name= feat.field_name
+    operator= feat.operator
+    project_status= feat.project_status
+    inplace= feat.inplace
+    depth= feat.depth
+    temp= feat.temp
+    poro= feat.poro
+    perm= feat.perm
+    saturate= feat.saturate
+    api_dens= feat.api_dens
+    visc= feat.visc
+    avg_fluid_rate= feat.avg_fluid_rate
+    location= feat.location
+    region= feat.region
+
     
     try:
-        forming = {}
         col = ['fluid','field_name','operator','project_status',
                 'inplace','depth','temp','poro',
                 'perm','saturate','api_dens','visc',
@@ -53,13 +83,11 @@ def add_component(fluid: str =Form(), field_name: str =Form(), operator: str =Fo
                 perm,saturate,api_dens,visc,
                 avg_fluid_rate,location,region]
 
-        for i in zip(col, val):
-            forming[i[0]] = i[1]
-
-        df = pd.DataFrame([forming])
+        df = pd.DataFrame(val, columns=col)
 
         predict, proba = main_predict(df, model, param_preprocess, param_feat_eng)
         res = res_constructor(predict, proba)
+
         return res
 
     except Exception as e:
