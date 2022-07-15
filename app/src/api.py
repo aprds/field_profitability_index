@@ -101,5 +101,3 @@ async def get_prediction(
 
     except Exception as e:
         return {'result': "", 'proba': "", 'message': str(e)}
-    
-    
