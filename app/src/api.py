@@ -5,6 +5,7 @@ import numpy as np
 import joblib
 import yaml
 import json
+import uvicorn
 from preprocessing import preprocess
 from feature_engineering import feature_eng
 from utils import read_yaml
