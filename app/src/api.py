@@ -1,4 +1,5 @@
 from email.policy import default
+from unicodedata import decimal
 import pandas as pd
 import numpy as np
 import joblib
@@ -36,7 +37,7 @@ async def get_prediction(
     field_name: str =Query(..., description='Enter field name',),
     operator: str =Query(..., description='Enter operator name:',),
     project_status: str =Query(..., description='Enter project status: ONSHORE | OFFSHORE',),
-    inplace: float =Query(..., description='Enterinplace (MMBO.E):',),
+    inplace: float =Query(..., description='Enter inplace (MMBO.E):',),
     depth: float =Query(..., description='Enter depth (feet):',),
     temp: float =Query(..., description='Enter temperature (F):',),
     poro: float =Query(..., description='Enter porosity (fraction):',),
@@ -45,8 +46,8 @@ async def get_prediction(
     api_dens: float =Query(..., description='Enter density: API | Sg',), 
     visc: float =Query(..., description='Enter viscosity (cp):',),
     avg_fluid_rate: float =Query(..., description='Enter average fluid rate (BOPD.E):',),
-    location: str =Query(..., description='Enter field location:',),
-    region:str =Query(..., description='Enter field region:',),):
+    location: str =Query(..., description='Enter field location: Aceh | Jambi | Jawa Barat | Jawa Tengah | Jawa Timur | Kalimantan Selatan | Kalimantan Tengah | Kalimantan Timur | Kalimantan Utara | Laut Cina Utara | Laut Jawa | Laut Natuna | Laut Natuna Utara | Laut Seram | Laut Timor | Maluku | Papua Barat | Riau | Selat Makasar | Selat Malaka | Sulawesi Barat | Sulawesi Selatan | Sulawesi Tengah | Sulawesi Tengah (offshore) | Sumatera Barat | Sumatera Selatan | Sumatera Utara | Teluk Berau',),
+    region:str =Query(..., description='Enter field region: Jawa | Kalimantan | Sumatera | Timur',),):
     
     try:
         PREPROCESSING_CONFIG_PATH = "../config/preprocessing_config.yaml"
@@ -58,10 +59,16 @@ async def get_prediction(
         param_preprocess = read_yaml(PREPROCESSING_CONFIG_PATH)
 
         def res_constructor(predict, proba):
+            if proba <= 0.5: # Return proba to represent models confident level
+                proba = 1 - proba
+
+            else:
+                proba
+            
             res = {'result': predict, 'proba': proba}
 
             return res
-            
+
         
         class NpEncoder(json.JSONEncoder):
             def default(self, obj):
