@@ -1,26 +1,25 @@
+from email.policy import default
 import pandas as pd
+import numpy as np
 import joblib
 import yaml
+import json
 from preprocessing import preprocess
 from feature_engineering import feature_eng
 from utils import read_yaml
 from prediction import main_predict
-from fastapi import FastAPI, Form, Header, HTTPException
+from fastapi import FastAPI, Form, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import ORJSONResponse, JSONResponse
+import os
 from tqdm import tqdm
 from pydantic import BaseModel
 
 tqdm.pandas()
 
-PREPROCESSING_CONFIG_PATH = "../config/preprocessing_config.yaml"
-FEATURE_ENGINEERING_CONFIG_PATH = "../config/feature_engineering_config.yaml"
-
-model = joblib.load('../model/fitted_model.pkl')
-
-param_feat_eng = read_yaml(FEATURE_ENGINEERING_CONFIG_PATH)
-param_preprocess = read_yaml(PREPROCESSING_CONFIG_PATH)
-
-app = FastAPI()
+app = FastAPI(title= 'Field Profitability Index Prediction', description= 'Predict the field profitability using its nearby field information',
+                version='1.0', default_response_class=ORJSONResponse)
 
 origins = ["*"]
 app.add_middleware(
@@ -31,64 +30,67 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def res_constructor(predict, proba):
-    res = {'result': predict, 'proba': proba}
-    return res
-
-class Fld_indx(BaseModel):
-    fluid: str
-    field_name: str 
-    operator: str
-    project_status: str
-    inplace: float
-    depth: float
-    temp: float
-    poro: float
-    perm: float
-    saturate: float
-    api_dens: float
-    visc: float
-    avg_fluid_rate: float
-    location: str
-    region: str
-
-
-@app.get("/predict/")
-async def get_prediction(feat: Fld_indx):
-    fluid= feat.fluid
-    field_name= feat.field_name
-    operator= feat.operator
-    project_status= feat.project_status
-    inplace= feat.inplace
-    depth= feat.depth
-    temp= feat.temp
-    poro= feat.poro
-    perm= feat.perm
-    saturate= feat.saturate
-    api_dens= feat.api_dens
-    visc= feat.visc
-    avg_fluid_rate= feat.avg_fluid_rate
-    location= feat.location
-    region= feat.region
-
+@app.post("/predict/")
+async def get_prediction(
+    fluid: str =Query(..., description='Enter fluid type: Oil | Gas | Oil-Gas',),
+    field_name: str =Query(..., description='Enter field name',),
+    operator: str =Query(..., description='Enter operator name:',),
+    project_status: str =Query(..., description='Enter project status: ONSHORE | OFFSHORE',),
+    inplace: float =Query(..., description='Enterinplace (MMBO.E):',),
+    depth: float =Query(..., description='Enter depth (feet):',),
+    temp: float =Query(..., description='Enter temperature (F):',),
+    poro: float =Query(..., description='Enter porosity (fraction):',),
+    perm: float =Query(..., description='Enter permeability (md):',),
+    saturate: float =Query(..., description='Enter saturation (fraction):',),
+    api_dens: float =Query(..., description='Enter density: API | Sg',), 
+    visc: float =Query(..., description='Enter viscosity (cp):',),
+    avg_fluid_rate: float =Query(..., description='Enter average fluid rate (BOPD.E):',),
+    location: str =Query(..., description='Enter field location:',),
+    region:str =Query(..., description='Enter field region:',),):
     
     try:
+        PREPROCESSING_CONFIG_PATH = "../config/preprocessing_config.yaml"
+        FEATURE_ENGINEERING_CONFIG_PATH = "../config/feature_engineering_config.yaml"
+
+        model = joblib.load('../model/fitted_model.pkl')
+
+        param_feat_eng = read_yaml(FEATURE_ENGINEERING_CONFIG_PATH)
+        param_preprocess = read_yaml(PREPROCESSING_CONFIG_PATH)
+
+        def res_constructor(predict, proba):
+            res = {'result': predict, 'proba': proba}
+
+            return res
+            
+        
+        class NpEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, np.integer):
+                    return int(obj)
+                if isinstance(obj, np.floating):
+                    return float(obj)
+                if isinstance(obj, np.ndarray):
+                    return obj.tolist()
+
+                return json.JSONEncoder.default(self, obj)
+
+
         col = ['fluid','field_name','operator','project_status',
                 'inplace','depth','temp','poro',
                 'perm','saturate','api_dens','visc',
                 'avg_fluid_rate','location','region']
 
-        val = [fluid,field_name,operator,project_status,
+        val = [[fluid,field_name,operator,project_status,
                 inplace,depth,temp,poro,
                 perm,saturate,api_dens,visc,
-                avg_fluid_rate,location,region]
+                avg_fluid_rate,location,region]]
 
         df = pd.DataFrame(val, columns=col)
 
         predict, proba = main_predict(df, model, param_preprocess, param_feat_eng)
         res = res_constructor(predict, proba)
 
-        return res
+        return json.dumps(res, cls=NpEncoder)
 
     except Exception as e:
         return {'result': "", 'proba': "", 'message': str(e)}
