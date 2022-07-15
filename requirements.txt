@@ -14,3 +14,4 @@ tqdm==4.59.0
 xgboost==1.6.1
 gunicorn
 uvicorn[standard]
+orjson==3.7.7
