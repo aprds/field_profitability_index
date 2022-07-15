@@ -37,7 +37,7 @@ async def get_prediction(
     fluid: str =Query(..., description='Enter fluid type: Oil | Gas | Oil-Gas',),
     field_name: str =Query(..., description='Enter field name',),
     operator: str =Query(..., description='Enter operator name:',),
-    project_status: str =Query(..., description='Enter project status: ONSHORE | OFFSHORE',),
+    project_status: str =Query(..., description='Enter project status: ONSHORE | OFFSHORE | BOTH',),
     inplace: float =Query(..., description='Enter inplace (MMBO.E):',),
     depth: float =Query(..., description='Enter depth (feet):',),
     temp: float =Query(..., description='Enter temperature (F):',),
