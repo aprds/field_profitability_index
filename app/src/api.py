@@ -36,7 +36,7 @@ app.add_middleware(
 async def get_prediction(
     fluid: str =Query(..., description='Enter fluid type: Oil | Gas | Oil-Gas',),
     field_name: str =Query(..., description='Enter field name',),
-    operator: str =Query(..., description='Enter operator name:',),
+    operator: str =Query(..., description='Enter operator name: PERTAMINA | NON_PERTAMINA',),
     project_status: str =Query(..., description='Enter project status: ONSHORE | OFFSHORE | BOTH',),
     inplace: float =Query(..., description='Enter inplace (MMBO.E):',),
     depth: float =Query(..., description='Enter depth (feet):',),
@@ -44,7 +44,7 @@ async def get_prediction(
     poro: float =Query(..., description='Enter porosity (fraction):',),
     perm: float =Query(..., description='Enter permeability (md):',),
     saturate: float =Query(..., description='Enter saturation (fraction):',),
-    api_dens: float =Query(..., description='Enter density: API | Sg',), 
+    api_dens: float =Query(..., description='Enter density: API | Sg -> For Oil & Oil-Gas Fluid Type input Oil API',), 
     visc: float =Query(..., description='Enter viscosity (cp):',),
     avg_fluid_rate: float =Query(..., description='Enter average fluid rate (BOPD.E):',),
     location: str =Query(..., description='Enter field location: Aceh | Jambi | Jawa Barat | Jawa Tengah | Jawa Timur | Kalimantan Selatan | Kalimantan Tengah | Kalimantan Timur | Kalimantan Utara | Laut Cina Utara | Laut Jawa | Laut Natuna | Laut Natuna Utara | Laut Seram | Laut Timor | Maluku | Papua Barat | Riau | Selat Makasar | Selat Malaka | Sulawesi Barat | Sulawesi Selatan | Sulawesi Tengah | Sulawesi Tengah (offshore) | Sumatera Barat | Sumatera Selatan | Sumatera Utara | Teluk Berau',),
