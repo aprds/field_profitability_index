@@ -1,9 +1,10 @@
-fastapi==0.78.0
+fastapi==0.79.0
 hyperopt==0.2.7
 joblib==1.0.1
 matplotlib==3.3.4
 numpy==1.20.1
 pandas==1.2.4
+pydantic==1.9.1
 PyYAML==6.0
 scikit_learn==1.1.1
 scipy==1.6.2
@@ -11,3 +12,4 @@ SQLAlchemy==1.4.7
 sympy==1.8
 tqdm==4.59.0
 xgboost==1.6.1
+gunicorn
