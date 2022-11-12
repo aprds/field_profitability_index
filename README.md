@@ -18,5 +18,4 @@ Process Overview
 ----------------
 In this work, we try to define wheter an oil and gas field is profitable to be further developed or not together with its probability. we also used several models such as Decision Tree, XGBoost, LGBM, and Deep Learning. The flow chart below ilustrates the process we are doing in this project.
 
-![](../../../../../c:/Users/andip/Documents/Image_1%20Flow.GIF)
-
+!["hashas"](img/Image_1%20Flow.GIF)
