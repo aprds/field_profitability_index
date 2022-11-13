@@ -3,19 +3,19 @@
 
 
 ## Background
------------
+
 In this work, we are aiming to solve a problem in oil and gas industry mainly in the government domain/ regulator poin of view. The complexity in oil and gas business spread accross almost of its domain, one example is in development aspect when engineers have to deliver investment grade plan under high scale of investment and high uncertainty. By using subsurface-economic data from various field in Indonesia, we are able to demonstrate how wide range of data that government collected can be utilize to assisst decision maker, engineers, new venture company, etc to verify its plan before decision is made.
 
 
 ## Objective
-------------
+
 In this work, we used a dataset from Indonesia Oil and Gas Government Institution, consisting of subsurface features such as field name, OGIP/ OOIP, and other subsurface parameters including economic indicator for each field.
 
 Our main goal is to provide a benchmarking tool for Oil and Gas participants to get an ealy indicative economic value such as Profitability Index (PI) of newly discovered oil and gas fields. This information is crucial to enhance the field development concept from technical and economic point of view because engineer/ development staff/ entity could focus more on the fields that have higher chance to become profitable so they are able to increase their productivity and accelerate development stage.
 
 
 ## Process Overview
-----------------
+
 In this work, we try to define wheter an oil and gas field is profitable to be further developed or not together with its probability. we also used several models such as Decision Tree, XGBoost, LGBM, and Deep Learning. The flow chart below ilustrates the process we are doing in this project.
 
 !["Project Process Workflow"](img/Image_1%20Flow.GIF)
@@ -23,7 +23,7 @@ In this work, we try to define wheter an oil and gas field is profitable to be f
 
 
 ## Dataset & Features
-----------------
+
 In this work, we used the eSDC datasets, consisting of 20 original features and 1 target. eSDC is subsurface dataset proprietary by SKK Migas. We used 60-40 proportion for train and validation + test data and 50-50 proportion for valid & test data.
 
 Features Name   |   Explanation |   Unit    |
@@ -51,7 +51,7 @@ PI  | Profitability index   | NPV/Total Cost
 prospect_rank   | 0 as marginal & 1 as profitabel   | target variable
 
 ## Exploratory Data Analysis
-----------------------------
+
 __Effect of inplace, avg_fluid_rate, fluid on prospect_rank__
 
 We suspect there is a causal effect of `inplace` & `avg_fluid_rate` in `prospect_rank`. While we segmented on `fluid` we notice that by having bigger `inplace` and `avg_fluid_rate` could lead us to more preferable economic of scale benefit therefore significantly improve our field `prospect_rank` but we notice a high level anomaly on `fluid`==`Gas` where `avg_fluid_rate` are not giving significant impact any more on `prospect_rank`. This issue could be inferred from graph when `prospect_rank` == 0 exists together along `prospect_rank` 1. This issue need to be addressed in more detail analysis during modeling whether additional features are needed to clarify or not.
@@ -123,7 +123,7 @@ __General Conclusion from EDA :__
 11.	On oil project, neither Pertamina nor others could deliver better performance on profitabilty but we might use `avg_fluid_rate` > 1000 BOPD.E as economic cutoff.
 
 ## Modeling Process
-----------------------------
+
 __Data Transformation__
 
 We are not going to apply any transformation on numerical data but for categorical we apply one_hot_encoding.
@@ -162,27 +162,27 @@ With xgboost as our model, we retrained the model with train and valid data and 
 Stopping criteria in our Hyperopt tuning is based on its reability in term of acceptable roc_auc_score ~0.80, high recall_score ~0.90 which is suitable to identify prospective fields as many as possible to be developed, high precision_score ~0.89 obtained relative to recall_score, therefore, could help users to find real/ true prospective fields in timely manner with minimal re-evaluation job.
 
 ## Product
----------------------
+
 From the model that we have created, we save it with the Joblib module in the form of pkl. Next we make a deployment using heroku. The results of our deployment can be seen on the link https://peaceful-ravine-66425.herokuapp.com/docs. The snapshot of the interface of our product is as shown in the image below:
 
 ![](img/Image_14.GIF)
 
 ## Result
----------------------
+
 When we have finished filling in all the data on the form we can click submit and the application will calculate the results whether our field is profitable (1) or marginal (0) as long as its probability.
 
 ![](img/Image_15.GIF)
 
 ## Conclusion
--------------------
+
 1.	XGBoost has been selected as model ready and has been deployed on Heroku
 2.	Decision to select XGBoost is based on its reability in term of acceptable roc_auc_score ~0.80, high recall_score ~0.90 which is suitable to identify prospective fields as many as possible to be developed, high precision_score ~0.89 obtained relative to recall_score, therefore, could help users to find real/ true prospective fields in timely manner with minimal re-evaluation job, furthermore, on its capability to allow engineer doing iteration, finetuning and optimization as fast as possible
 3.	Information from trees in XGBoost combined with features_importances could help engineer getting meaningful insight related to intrinsic factors that could effect field prospective index. Also, by using these trees, engineer could weight their focus on certain aspects to increase their odd finding the profitable oil & gas assets
 
 ## References
----------------
+
 - eSDC Dataset
 
 ## App Link
----------------
+
 https://peaceful-ravine-66425.herokuapp.com/docs. 
